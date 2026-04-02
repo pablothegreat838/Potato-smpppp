@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Staff Panel</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<h1>🛠 Staff Panel</h1>
+
+<div id="login">
+  <input id="password" placeholder="Password">
+  <button onclick="login()">Login</button>
+</div>
+
+<div id="panel" style="display:none;">
+
+<h2>📰 News Manager</h2>
+<input id="newsInput" placeholder="Write news">
+<button onclick="addNews()">Add</button>
+<div id="newsList"></div>
+
+<h2>📜 Rules Editor</h2>
+<textarea id="rulesInput"></textarea>
+<button onclick="saveRules()">Save Rules</button>
+
+</div>
+
+<script type="module" src="firebase.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
