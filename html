@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Potato-SMPP</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial;
+  background: #f4efe7;
+}
+
+/* NAV */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  padding: 15px;
+  background: white;
+}
+
+.nav-links a {
+  margin: 5px;
+  padding: 8px 15px;
+  text-decoration: none;
+  color: black;
+  border-radius: 20px;
+}
+
+.active {
+  background: orange;
+  color: white;
+}
+
+/* SECTIONS */
+.section { display:none; padding:20px; text-align:center;}
+.section.active { display:block; }
+
+.card {
+  background:#eee;
+  padding:20px;
+  border-radius:15px;
+  width:300px;
+  margin:20px auto;
+}
+
+button {
+  padding:10px;
+  border:none;
+  border-radius:20px;
+  background:orange;
+  cursor:pointer;
+  margin:5px;
+}
+
+input, textarea, select {
+  width:100%;
+  margin:5px 0;
+  padding:10px;
+  border-radius:10px;
+  border:none;
+}
+
+/* CHAT */
+.chat-box {
+  height:200px;
+  overflow:auto;
+  background:white;
+  padding:10px;
+}
+
+/* POPUP */
+.popup {
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:rgba(0,0,0,0.7);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+
+.popup-content {
+  background:white;
+  padding:20px;
+  border-radius:10px;
+  width:300px;
+  text-align:center;
+}
+</style>
+</head>
+
+<body>
+
+<!-- TERMS POPUP -->
+<div id="terms" class="popup">
+  <div class="popup-content">
+    <p>
+    by entering this website you agree on the terms and services by if you get hacked or get any viruses or get suspended for using this website we do not take responsibility you are using this website at your own risk
+    </p>
+    <button onclick="acceptTerms()">Accept</button>
+  </div>
+</div>
+
+<!-- NAV -->
+<div class="navbar">
+  <b>🥔 Potato-SMPP</b>
+  <div class="nav-links">
+    <a onclick="showPage('home')" class="active">Home</a>
+    <a onclick="showPage('news')">News</a>
+    <a onclick="showPage('chat')">Chat</a>
+    <a onclick="showPage('report')">Report</a>
+    <a onclick="showPage('staff')">Staff</a>
+  </div>
+</div>
+
+<!-- HOME -->
+<div id="home" class="section active">
+  <h1>Welcome</h1>
+</div>
+
+<!-- NEWS -->
+<div id="news" class="section">
+  <h1>News</h1>
+  <div id="newsList"></div>
+</div>
+
+<!-- CHAT -->
+<div id="chat" class="section">
+  <h1>Chat</h1>
+
+  <input id="username" placeholder="Enter username">
+  <button onclick="setName()">Set Name</button>
+
+  <div class="chat-box" id="chatBox"></div>
+
+  <input id="message" placeholder="Message">
+  <button onclick="sendMsg()">Send</button>
+
+  <h3>Emoji Tab</h3>
+  <div id="emojiTab"></div>
+</div>
+
+<!-- REPORT -->
+<div id="report" class="section">
+  <h1>Report</h1>
+
+  <select id="reportType">
+    <option>Bug</option>
+    <option>Player</option>
+  </select>
+
+  <input id="reportUser" placeholder="Username">
+  <textarea id="reportDesc" placeholder="Describe"></textarea>
+
+  <button onclick="submitReport()">Submit</button>
+</div>
+
+<!-- STAFF -->
+<div id="staff" class="section">
+  <h1>Staff Panel</h1>
+
+  <div id="loginBox">
+    <input id="staffPass" placeholder="Password">
+    <button onclick="login()">Login</button>
+  </div>
+
+  <div id="panel" style="display:none">
+
+    <h2>Post News</h2>
+    <input id="newsTitle" placeholder="Title">
+    <input id="newsText" placeholder="Text">
+    <button onclick="addNews()">Post</button>
+
+    <h2>All News</h2>
+    <div id="adminNews"></div>
+
+    <h2>Reports</h2>
+    <div id="reports"></div>
+
+  </div>
+</div>
+
+<script>
+
+/* TERMS */
+function acceptTerms(){
+  localStorage.setItem("accepted",true)
+  document.getElementById("terms").style.display="none"
+}
+if(localStorage.getItem("accepted")){
+  document.getElementById("terms").style.display="none"
+}
+
+/* NAV */
+function showPage(id){
+  document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"))
+  document.getElementById(id).classList.add("active")
+}
+
+/* NEWS */
+function addNews(){
+  let news = JSON.parse(localStorage.getItem("news")||"[]")
+  news.push({
+    title:newsTitle.value,
+    text:newsText.value
+  })
+  localStorage.setItem("news",JSON.stringify(news))
+  loadNews()
+}
+
+function loadNews(){
+  let news = JSON.parse(localStorage.getItem("news")||"[]")
+  newsList.innerHTML=""
+  adminNews.innerHTML=""
+
+  news.forEach((n,i)=>{
+    newsList.innerHTML += `<div>${n.title} - ${n.text}</div>`
+
+    adminNews.innerHTML += `
+    <div>
+      ${n.title}
+      <button onclick="deleteNews(${i})">Delete</button>
+    </div>`
+  })
+}
+
+function deleteNews(i){
+  let news = JSON.parse(localStorage.getItem("news"))
+  news.splice(i,1)
+  localStorage.setItem("news",JSON.stringify(news))
+  loadNews()
+}
+
+/* REPORTS */
+function submitReport(){
+  let reports = JSON.parse(localStorage.getItem("reports")||"[]")
+
+  reports.push({
+    type:reportType.value,
+    user:reportUser.value,
+    desc:reportDesc.value
+  })
+
+  localStorage.setItem("reports",JSON.stringify(reports))
+  alert("Report sent")
+}
+
+function loadReports(){
+  let reports = JSON.parse(localStorage.getItem("reports")||"[]")
+  let box=""
+  reports.forEach(r=>{
+    box += `<div>${r.type} - ${r.user} - ${r.desc}</div>`
+  })
+  document.getElementById("reports").innerHTML = box
+}
+
+/* STAFF LOGIN */
+function login(){
+  if(staffPass.value==="0923"){
+    loginBox.style.display="none"
+    panel.style.display="block"
+    loadReports()
+    loadNews()
+  }else{
+    alert("Wrong password")
+  }
+}
+
+/* CHAT */
+let currentUser=""
+
+function setName(){
+  let users = JSON.parse(localStorage.getItem("users")||"[]")
+
+  if(users.includes(username.value)){
+    alert("sorry this name is taken")
+    return
+  }
+
+  currentUser = username.value
+  users.push(currentUser)
+  localStorage.setItem("users",JSON.stringify(users))
+}
+
+function sendMsg(){
+  let msgs = JSON.parse(localStorage.getItem("chat")||"[]")
+
+  msgs.push(`${currentUser}: ${message.value}`)
+
+  localStorage.setItem("chat",JSON.stringify(msgs))
+  loadChat()
+}
+
+function loadChat(){
+  let msgs = JSON.parse(localStorage.getItem("chat")||"[]")
+  chatBox.innerHTML = msgs.join("<br>")
+}
+
+/* EMOJIS */
+let emojis = ["😀","😂","🔥","😎","🥔","💀","❤️","👍"]
+
+emojis.forEach(e=>{
+  emojiTab.innerHTML += `<button onclick="addEmoji('${e}')">${e}</button>`
+})
+
+function addEmoji(e){
+  message.value += e
+}
+
+/* INIT */
+loadNews()
+loadChat()
+
+</script>
+
+</body>
+</html>
